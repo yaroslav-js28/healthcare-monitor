@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Patient {
+  id          String      @id @default(uuid())
+  name        String
+  dateOfBirth DateTime    @map("date_of_birth")
+  lastVisit   DateTime    @map("last_visit")
+  biomarkers  Biomarker[]
+}
+
+model Biomarker {
+  id         String   @id @default(uuid())
+  patientId  String   @map("patient_id")
+  patient    Patient  @relation(fields: [patientId], references: [id])
+  name       String
+  value      Float
+  unit       String
+  category   String
+  rangeMin   Float
+  rangeMax   Float
+  status     String
+  measuredAt DateTime @default(now()) @map("measured_at")
+}
