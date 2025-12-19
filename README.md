@@ -1,96 +1,105 @@
-# HealthMonorepo
+# Healthcare Monitor
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Tech Stack
 
-## Run tasks
+* **Monorepo:** Nx
+* **Backend:** NestJS, Prisma, MySQL
+* **Frontend:** React, Vite, TailwindCSS, Recharts, Zustand, Headless UI
+* **AI/MCP:** Model Context Protocol SDK, Zod
+* **Infrastructure:** Docker Compose
 
-To run tasks with Nx use:
+---
+## Architecture decisions
 
-```sh
-npx nx <target> <project-name>
+### 1. Monorepo Strategy
+
+This allows to share code, types, and configurations between the API, Frontend, and MCP Server without duplication.
+ All distinct applications share a single source of truth for the Database Schema and TypeScript Interfaces.
+
+### 2. Backend
+
+The NestJS is chosen for the core API because of its modular architecture and native TypeScript support.
+
+### 3. Data Access Layer
+
+The "Parallel Access" Pattern: Both the NestJS API and the MCP Server import Prisma client from this shared library.
+
+### 4. MCP Integration
+
+The MCP Server runs on stdio to communicate with AI clients.
+
+#### Flow: 
+1.  Web Users interact via the Frontend → NestJS API → Database.
+2.  AI Agents interact via LLM Client → MCP Server → Database.
+
+---
+
+##  Getting Started
+
+### 1. Install dependencies
+
+```bash
+pnpm install
 ```
 
-For example:
+### 2. Environment Setup
 
-```sh
-npx nx build myproject
+Create a `.env` file in the **root** of the project:
+
+```bash
+# .env
+DATABASE_URL="mysql://user:password@localhost:3306/healthcare_db"
+DATABASE_USER="user"
+DATABASE_PASSWORD="password"
+DATABASE_NAME="db-name"
+DATABASE_HOST="localhost"
+DATABASE_PORT=3306
+PORT=3001
+
+FRONTEND_URL=URL_FOR_FRONTEND
+
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+### 3. Database Migration & Seeding
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Apply the schema and generate fake patient data:
 
-## Add new projects
+```bash
+# Run migrations (creates tables)
+pnpm db:migrate
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
+# Seed the database with 5 patients & 15 biomarkers each
+pnpm db:seed
 ```
 
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
+## Running the Applications
 
-```sh
-# Generate an app
-npx nx g @nx/react:app demo
+You can run apps individually or all together.
 
-# Generate a library
-npx nx g @nx/react:lib some-lib
+### Run Everything (Parallel)
+
+```bash
+npx nx run-many --target=serve --all --parallel
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+### Run Individually (Recommended for Debugging)
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+**1. API Backend**
 
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
+```bash
+npx nx serve api
+```
+**2. Client**
+```bash
+npx nx serve patient-portal
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+**3. MCP Server**
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
+```bash
+npx nx serve mcp-server
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
