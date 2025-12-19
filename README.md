@@ -102,4 +102,8 @@ npx nx serve patient-portal
 npx nx serve mcp-server
 ```
 
+## Notes
 
+AI Tools used:
+
+* Google gemini
